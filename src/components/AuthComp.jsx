@@ -96,22 +96,17 @@ const AuthComp = ({ type, formik }) => {
                 </div>
               </div>
 
-              <button
-                className={`bg-[${
-                  colors.accent
-                }] transition py-3 w-full text-lg text-white hover:bg-red-500 rounded text-center ${
-                  !formik.isValidating &&
-                  formik.isSubmitting &&
-                  `cursor-not-allowed bg-white pointer-events-none border border-solid border-[${colors.accent}]`
-                }`}
-                type="submit"
-              >
-                {!formik.isValidating && formik.isSubmitting ? (
+              {!formik.isValidating && formik.isSubmitting ? (
+                <button
+                  className={`cursor-progress w-full py-3 rounded text-center bg-white border border-solid border-[#ea515c]`}
+                >
                   <Spinner />
-                ) : (
-                  "Continue"
-                )}
-              </button>
+                </button>
+              ) : (
+                <button className="bg-[#ea515c] transition py-3 w-full text-lg text-white hover:bg-red-500 rounded text-center">
+                  Continue
+                </button>
+              )}
             </form>
 
             <div className="mt-3">

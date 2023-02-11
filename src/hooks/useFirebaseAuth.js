@@ -7,7 +7,6 @@ import {
   sendEmailVerification,
   signOut,
   signInWithEmailAndPassword,
-  signInWithPopup,
   signInWithRedirect,
   GoogleAuthProvider,
   getRedirectResult,

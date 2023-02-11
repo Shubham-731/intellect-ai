@@ -40,7 +40,7 @@ const Signup = () => {
         if (res.status === "success") {
           actions.resetForm();
         } else if (res.status === "error") {
-          toast.error(res.error.code);
+          toast.error(res.msg);
         }
       } catch (err) {
         console.log(err);
