@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import Topbar from "./Topbar";
 import Spinner from "./Spinner";
-import colors from "@/utils/colors";
 import { useAuth } from "@/contexts/authContext";
 import { toast } from "react-toastify";
 
@@ -24,11 +23,11 @@ const AuthComp = ({ type, formik }) => {
       <div className="max-w-sm mx-auto p-4 text-center">
         <div>
           <div className="mb-8 space-y-1">
-            <h1 className="text-3xl font-semibold">
+            <h1 className="text-2xl sm:text-3xl font-semibold">
               {type === "signup" ? "Create your account" : "Welcome back!"}
             </h1>
             {type === "signup" && (
-              <p className="text-slate-600 leading-4 text-sm max-w-xs mx-auto">
+              <p className="text-black/80 dark:text-white/80 leading-4 text-xs sm:text-sm max-w-xs mx-auto">
                 Please note that email verification is required for signup. Your
                 email will only be used to verify your identity for security
                 purposes.
@@ -43,7 +42,7 @@ const AuthComp = ({ type, formik }) => {
                   <div>
                     <input
                       type="text"
-                      className={`w-full p-3 border border-solid border-slate-400 focus:outline-1 outline-[#ea515c] rounded`}
+                      className={`w-full p-3 border border-solid border-slate-400 text-sm sm:text-base rounded`}
                       placeholder="Full Name"
                       value={formik.values.fullName}
                       onChange={formik.handleChange}
@@ -61,7 +60,7 @@ const AuthComp = ({ type, formik }) => {
                 <div>
                   <input
                     type="text"
-                    className={`w-full p-3 border border-solid border-slate-400 focus:outline-1 outline-[#ea515c] rounded`}
+                    className={`w-full p-3 border border-solid border-slate-400 text-sm sm:text-base rounded`}
                     placeholder="Email Address"
                     value={formik.values.email}
                     onChange={formik.handleChange}
@@ -78,7 +77,7 @@ const AuthComp = ({ type, formik }) => {
                 <div>
                   <input
                     type="password"
-                    className={`w-full p-3 border border-solid border-slate-400 focus:outline-1 outline-[#ea515c] rounded`}
+                    className={`w-full p-3 border border-solid border-slate-400 text-sm sm:text-base rounded`}
                     placeholder={
                       type === "signup" ? "Create password" : "Password"
                     }
@@ -98,19 +97,19 @@ const AuthComp = ({ type, formik }) => {
 
               {!formik.isValidating && formik.isSubmitting ? (
                 <button
-                  className={`cursor-progress w-full py-3 rounded text-center bg-white border border-solid border-[#ea515c]`}
+                  className={`cursor-progress w-full py-3 rounded text-center bg-transparent border border-solid border-[#ea515c]`}
                 >
                   <Spinner />
                 </button>
               ) : (
-                <button className="bg-[#ea515c] transition py-3 w-full text-lg text-white hover:bg-red-500 rounded text-center">
+                <button className="bg-[#ea515c] transition text-sm sm:text-lg py-3 w-full font-semibold tracking-wide text-white hover:bg-red-500 rounded text-center">
                   Continue
                 </button>
               )}
             </form>
 
             <div className="mt-3">
-              <p className="text-sm text-slate-700 space-x-1">
+              <p className="text-sm text-slate-700 dark:text-white/80 space-x-1">
                 <span>
                   {type === "signup"
                     ? "Already have an account?"
@@ -126,22 +125,24 @@ const AuthComp = ({ type, formik }) => {
               </p>
 
               <div className="flex items-center my-5">
-                <span className="flex-grow h-[2px] bg-slate-300"></span>
+                <span className="flex-grow h-[2px] bg-slate-300 dark:bg-white/50"></span>
                 <span className="uppercase text-sm mx-2">or</span>
-                <span className="flex-grow h-[2px] bg-slate-300"></span>
+                <span className="flex-grow h-[2px] bg-slate-300 dark:bg-white/50"></span>
               </div>
 
               <button
                 onClick={handleGoogle}
-                className="border flex items-center hover:bg-slate-100 transition gap-3 border-slate-600 rounded w-full px-4 py-3 text-left"
+                className="border flex items-center dark:hover:bg-white/10 hover:bg-black/10 transition gap-3 border-slate-600 rounded w-full px-4 py-3 text-left"
               >
                 <Image
                   src={"/pngs/google.png"}
-                  width={32}
-                  height={32}
+                  width={24}
+                  height={24}
                   alt="Continue with google"
                 />
-                <span>Continue with Google</span>
+                <span className="text-sm sm:text-base">
+                  Continue with Google
+                </span>
               </button>
             </div>
           </div>

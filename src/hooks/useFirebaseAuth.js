@@ -11,7 +11,7 @@ import {
   GoogleAuthProvider,
   getRedirectResult,
 } from "firebase/auth";
-import { formatAuthUser, formatFbAuthCode } from "@/utils/format";
+import { formatAuthUser, formatFbAuthCode } from "@/utils/format.mjs";
 
 // Create custom usefirebaseAuth hook
 export default function useFirebaseAuth() {

@@ -7,6 +7,10 @@ import { useRouter } from "next/router";
 import AuthContextProvider from "@/contexts/authContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import seo from "@/utils/seo";
+import Head from "next/head";
+import Header from "@/components/Header";
+import ThemeContextProvider from "@/contexts/themeContext";
 
 const roboto = Roboto({
   weight: ["100", "300", "400", "500", "700", "900"],
@@ -36,23 +40,38 @@ export default function App({ Component, pageProps }) {
         height={3}
         waitingTime={400}
       />
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-      <div className={roboto.className}>
+      <Head>
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
+        <meta name="keywords" content={seo.keywords.join(", ")} />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.png" />
+      </Head>
+      <main className={roboto.className}>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
+
         <AuthContextProvider>
-          <Component {...pageProps} />
+          <ThemeContextProvider>
+            <div
+              className={!Component.getLayout && `flex flex-col md:flex-row`}
+            >
+              {!Component.getLayout && <Header />}
+              <Component {...pageProps} />
+            </div>
+          </ThemeContextProvider>
         </AuthContextProvider>
-      </div>
+      </main>
     </>
   );
 }

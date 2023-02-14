@@ -1,6 +1,6 @@
 import Topbar from "@/components/Topbar";
 import colors from "@/utils/colors";
-import Head from "next/head";
+import { NextSeo } from "next-seo";
 import { useAuth } from "@/contexts/authContext";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
@@ -35,9 +35,8 @@ const VerifyEmail = () => {
 
   return (
     <>
-      <Head>
-        <title>Verify email address | IntellectAI</title>
-      </Head>
+      <NextSeo title="Verify email address | IntellectAI" />
+
       {!loading && (
         <div>
           <Topbar />
@@ -74,3 +73,7 @@ const VerifyEmail = () => {
 };
 
 export default VerifyEmail;
+
+VerifyEmail.getLayout = function PageLayout(page) {
+  return <>{page}</>;
+};

@@ -1,5 +1,6 @@
 import colors from "@/utils/colors";
 import Image from "next/image";
+import seo from "@/utils/seo";
 
 const Topbar = () => {
   return (
@@ -18,9 +19,8 @@ const Topbar = () => {
           Intellect
           <span className={`text-[${colors.accent}] font-bold`}>AI</span>
         </h2>
-        <p className="hidden md:block text-slate-400 text-sm">
-          Empowering the future with IntellectAI: Where intelligence is
-          limitless
+        <p className="hidden md:block text-black/80 dark:text-white/80 text-sm">
+          {seo.slogan}
         </p>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import AuthComp from "@/components/AuthComp";
-import Head from "next/head";
+import { NextSeo } from "next-seo";
 import { useFormik } from "formik";
 import { validateSignin } from "@/validation/auth";
 import { useEffect } from "react";
@@ -47,12 +47,14 @@ const Signin = () => {
 
   return (
     <>
-      <Head>
-        <title>Log In | IntellectAI</title>
-      </Head>
+      <NextSeo title="Log In | IntellectAI" />
       <AuthComp type={"signin"} formik={formik} />
     </>
   );
 };
 
 export default Signin;
+
+Signin.getLayout = function PageLayout(page) {
+  return <>{page}</>;
+};
