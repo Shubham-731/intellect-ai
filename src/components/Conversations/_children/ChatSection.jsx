@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Response from "./response";
+import Response from "./Response";
 import { useAuth } from "@/contexts/authContext";
 
 const ChatSection = ({ userMsg, botMsg }) => {
