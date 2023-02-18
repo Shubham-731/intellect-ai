@@ -17,7 +17,9 @@ const ChatSection = ({ userMsg, botMsg }) => {
         </div>
 
         {/* User prompt */}
-        <p className="dark:text-white/80 text-black/80">{userMsg}</p>
+        <div className="pt-1">
+          <p className="dark:text-white/80 text-black/80">{userMsg}</p>
+        </div>
       </div>
 
       {/* IntellectAI */}

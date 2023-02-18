@@ -14,7 +14,7 @@ async function handler(req, res) {
       const response = await openai.createCompletion({
         model: "text-davinci-003",
         prompt: `${prompt}`,
-        temperature: 0.7,
+        temperature: 0.5,
         max_tokens: 3500,
         top_p: 1,
         frequency_penalty: 0,

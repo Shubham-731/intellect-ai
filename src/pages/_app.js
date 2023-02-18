@@ -66,14 +66,12 @@ export default function App({ Component, pageProps }) {
           <ThemeContextProvider>
             <ChatContextProvider>
               <div
-                className={!Component.getLayout && `flex flex-col md:flex-row`}
+                className={
+                  !Component.getLayout ? `flex flex-col md:flex-row` : ""
+                }
               >
-                {!Component.getLayout && (
-                  <>
-                    <Header />
-                    <Component {...pageProps} />
-                  </>
-                )}
+                {!Component.getLayout && <Header />}
+                <Component {...pageProps} />
               </div>
             </ChatContextProvider>
           </ThemeContextProvider>

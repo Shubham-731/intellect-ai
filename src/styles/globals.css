@@ -34,21 +34,31 @@ html {
     background-color: #343540;
     color: #e8dede;
   }
+
+  .cursor {
+    background-color: white;
+  }
 }
 
 /* Blinking cursor animation */
-@keyframes blink {
-  0% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
+.cursor {
+  display: inline-block;
+  width: 5px;
+  height: 1.2em;
+  background-color: black;
+  animation: blink 1s infinite;
 }
 
-.animate-blink {
-  animation: blink 1s infinite;
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }

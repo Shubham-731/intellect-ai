@@ -11,6 +11,8 @@ import {
   query,
   collection,
   where,
+  orderBy,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "@/firebase";
 import { useAuth } from "./authContext";
@@ -19,12 +21,16 @@ import { useRouter } from "next/router";
 
 const chatContext = createContext({
   chatTitle: "New Chat",
+  typing: false,
   chats: [],
   messages: [],
+  response: "",
+  setTyping: () => {},
   setChatId: () => {},
   setChats: () => {},
   resetChat: () => {},
   handleChat: async (prompt) => {},
+  clearChats: async () => {},
 });
 
 function ChatContextProvider({ children }) {
@@ -32,9 +38,30 @@ function ChatContextProvider({ children }) {
   const [chatId, setChatId] = useState(null);
   const [chatTitle, setChatTitle] = useState("New chat");
   const [messages, setMessages] = useState([]);
+  const [typing, setTyping] = useState(false);
+  const [response, setResponse] = useState("");
 
   const { authUser } = useAuth();
   const router = useRouter();
+
+  const chatsColl = collection(db, "Chats");
+  console.log("loop");
+
+  // Get msg snapshots
+  const getMsgSnap = async (userId) => {
+    try {
+      const msgQuery = query(
+        chatsColl,
+        where("userId", "==", userId)
+        // orderBy("timestamp", "desc")
+      );
+      const msgSnap = await getDocs(msgQuery);
+      return msgSnap;
+    } catch (error) {
+      toast.error("Internal server error!");
+      console.log(error);
+    }
+  };
 
   // Set chats if chatId != null
   useEffect(() => {
@@ -46,7 +73,6 @@ function ChatContextProvider({ children }) {
         setChats(chatSnap.data().chats);
         setChatTitle(chatSnap.data().chatTitle);
       } else {
-        toast.error("Chats not found!");
         router.push("/chat");
       }
     };
@@ -60,13 +86,8 @@ function ChatContextProvider({ children }) {
   useEffect(() => {
     const getMessages = async () => {
       try {
-        const chatsColl = collection(db, "Chats");
         if (authUser?.uid) {
-          const msgQuery = query(
-            chatsColl,
-            where("userId", "==", authUser?.uid)
-          );
-          const msgSnap = await getDocs(msgQuery);
+          const msgSnap = await getMsgSnap(authUser?.uid);
 
           // Set messages
           let msgs = [];
@@ -90,9 +111,12 @@ function ChatContextProvider({ children }) {
   // Handle Chats
   const handleChat = async (prompt) => {
     try {
-      // Set user recent prompt
+      // Get user recent prompt
       const promptsArr = prompt.split("\n");
       const userPrompt = promptsArr.at(-1);
+
+      // Set user recent prompt
+      setChats([...chats, { userPrompt, botRes: "" }]);
 
       // Get response from openai
       const res = await axios.post(
@@ -108,8 +132,16 @@ function ChatContextProvider({ children }) {
       if (res.status === 200) {
         const botRes = res.data.response;
 
+        // Set botRes and start typing text animation
+        setResponse(botRes);
+        setTyping(true);
+
         // Update the `chat` state
-        setChats([...chats, { userPrompt, botRes }]);
+        setChats((prevChats) => {
+          const lastChat = prevChats.at(-1);
+          const updatedRes = { ...lastChat, botRes };
+          return [...prevChats.slice(0, -1), updatedRes];
+        });
 
         if (!chatId) {
           // Create a new chat document in firebase
@@ -150,18 +182,39 @@ function ChatContextProvider({ children }) {
     setChatTitle("New chat");
   };
 
+  // Clear chats
+  const clearChats = async () => {
+    try {
+      if (authUser?.uid) {
+        const msgSnap = await getMsgSnap(authUser?.uid);
+        msgSnap.forEach((msg) => {
+          deleteDoc(msg.ref);
+        });
+      }
+
+      toast.info("Chats cleared!");
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
+  const contextValues = {
+    chats,
+    typing,
+    setTyping,
+    setChats,
+    response,
+    handleChat,
+    setChatId,
+    chatTitle,
+    messages,
+    resetChat,
+    clearChats,
+  };
+
   return (
-    <chatContext.Provider
-      value={{
-        chats,
-        setChats,
-        handleChat,
-        setChatId,
-        chatTitle,
-        messages,
-        resetChat,
-      }}
-    >
+    <chatContext.Provider value={contextValues}>
       {children}
     </chatContext.Provider>
   );

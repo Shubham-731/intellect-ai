@@ -1,28 +1,30 @@
 import { useEffect, useState } from "react";
+import { useChat } from "@/contexts/chatContext";
 
-const Response = ({ res, typed, setTyped }) => {
-  /*  const [text, setText] = useState("");
+const Response = ({ res }) => {
+  const [displayedText, setDisplayedText] = useState("");
+
+  const { typing, setTyping, response } = useChat();
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (typed) {
-        setText(res);
-      }
-
-      if (text.length === res.length) {
-        setTyped(true);
-        clearInterval(interval);
-      } else {
-        setText(res.slice(0, text.length + 1));
-      }
-    }, 50);
+    let index = 0;
+    const interval =
+      typing &&
+      setInterval(() => {
+        setDisplayedText(response.substring(0, index));
+        index++;
+        if (index > response.length) {
+          clearInterval(interval);
+          setTyping(false);
+        }
+      }, 40);
 
     return () => clearInterval(interval);
-  }, [text]); */
+  }, [response]);
 
   return (
-    <div>
-      <div className="dark:text-white/80 text-black/80">{res}</div>
+    <div className="pt-1 relative">
+      {response == res && typing ? displayedText : res}
     </div>
   );
 };

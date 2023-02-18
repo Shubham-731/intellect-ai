@@ -11,7 +11,7 @@ const Sidebar = ({ open, setOpen }) => {
   const { logout } = useAuth();
   const { theme, handleThemeChange } = useTheme();
 
-  const { messages, setChats } = useChat();
+  const { messages, setChats, clearChats } = useChat();
 
   return (
     <>
@@ -50,7 +50,7 @@ const Sidebar = ({ open, setOpen }) => {
             <div className="flex flex-col justify-between relative h-full">
               {/* New chat */}
               <button
-                className="rounded transition h-fit"
+                className="rounded transition h-fit hidden md:block"
                 onClick={() => setChats([])}
               >
                 <Link href={"/chat"}>
@@ -69,13 +69,19 @@ const Sidebar = ({ open, setOpen }) => {
 
               {/* Chats */}
               <div className="p-2 h-full relative pt-0 pr-0 flex gap-1 flex-col md:overflow-y-hidden md:hover:overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/60 scrollbar-thumb-rounded-xl scroll-p-0 scroll-smooth shadow-inner">
-                {messages.map((msg) => (
-                  <Message
-                    link={`/chat/${msg.id}`}
-                    msg={msg.chatTitle}
-                    key={uuid()}
-                  />
-                ))}
+                {messages.length ? (
+                  messages.map((msg) => (
+                    <Message
+                      link={`/chat/${msg.id}`}
+                      msg={msg.chatTitle}
+                      key={uuid()}
+                    />
+                  ))
+                ) : (
+                  <p className="text-white/80 my-2 mx-1">
+                    No conversations yet
+                  </p>
+                )}
 
                 {/* <button className="mx-auto w-fit py-2 px-3 rounded border-2 border-white/50 text-sm hover:bg-white/10 transition-all">
                   Show More
@@ -86,7 +92,12 @@ const Sidebar = ({ open, setOpen }) => {
               <div
                 className={`border-t w-full h-fit p-2 border-solid border-white/50`}
               >
-                <button className="flex items-center gap-2 p-3 rounded  w-full hover:bg-white/10 transition">
+                <button
+                  onClick={clearChats}
+                  className={`flex items-center gap-2 p-3 rounded  w-full hover:bg-white/10 transition ${
+                    !messages.length && "pointer-events-none"
+                  }`}
+                >
                   <div className="relative w-4 h-4 invert">
                     <Image
                       src={"/svgs/trash.svg"}
@@ -94,7 +105,7 @@ const Sidebar = ({ open, setOpen }) => {
                       fill={true}
                     />
                   </div>
-                  <p className="text-left text-sm">Clear conversations</p>
+                  <span className="text-left text-sm">Clear conversations</span>
                 </button>
 
                 <button
@@ -104,7 +115,13 @@ const Sidebar = ({ open, setOpen }) => {
                   className="flex items-center gap-2 p-3 rounded w-full hover:bg-white/10 transition"
                 >
                   <div className="relative w-4 h-4 invert">
-                    <Image src={"/svgs/moon.svg"} alt="Dark mode" fill={true} />
+                    <Image
+                      src={
+                        theme === "light" ? "/svgs/moon.svg" : "/svgs/light.svg"
+                      }
+                      alt="Dark mode"
+                      fill={true}
+                    />
                   </div>
                   <p className="text-sm capitalize">
                     {theme === "light" ? "dark" : "light"} mode
