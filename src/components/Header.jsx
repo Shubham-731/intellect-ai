@@ -1,13 +1,21 @@
 import Image from "next/image";
 import Sidebar from "./Sidebar/Sidebar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useChat } from "@/contexts/chatContext";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const Header = () => {
   const [open, setOpen] = useState(false);
 
   const { chatTitle, setChats } = useChat();
+  const router = useRouter();
+
+  useEffect(() => {
+    router.events.on("routeChangeStart", () => {
+      setOpen(false);
+    });
+  }, [router]);
 
   return (
     <header className="fixed right-0 top-0 left-0 z-20 md:relative">

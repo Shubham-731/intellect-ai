@@ -1,5 +1,5 @@
-import Head from "next/head";
 import { useEffect } from "react";
+import { NextSeo } from "next-seo";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/authContext";
 
@@ -22,14 +22,11 @@ export default function Home() {
 
   return (
     <>
-      {!loading && (
-        <main>
-          <h1 className="text-3xl font-bold underline">
-            You are authenticated!
-          </h1>
-          <button onClick={logout}>logout</button>
-        </main>
-      )}
+      <NextSeo title="Home | IntellectAI" />
     </>
   );
 }
+
+Home.getLayout = function PageLayout(page) {
+  return <>{page}</>;
+};

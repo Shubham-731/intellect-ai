@@ -10,7 +10,7 @@ const Message = ({ link, msg }) => {
             <Image src={"/svgs/chat.svg"} alt="Chat" fill={true} />
           </div>
 
-          <div className="capitalize text-sm flex-1 text-ellipsis max-h-5 overflow-hidden break-all relative">
+          <div className="capitalize truncate text-sm flex-1 text-ellipsis max-h-5 overflow-hidden break-all relative">
             {msg}
           </div>
         </div>

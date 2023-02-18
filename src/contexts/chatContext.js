@@ -13,6 +13,7 @@ import {
   where,
   orderBy,
   deleteDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/firebase";
 import { useAuth } from "./authContext";
@@ -40,20 +41,21 @@ function ChatContextProvider({ children }) {
   const [messages, setMessages] = useState([]);
   const [typing, setTyping] = useState(false);
   const [response, setResponse] = useState("");
+  const [msgRefreshKey, setMsgRefreshKey] = useState(0);
+  const [chatRefreshKey, setChatRefreshKey] = useState(0);
 
   const { authUser } = useAuth();
   const router = useRouter();
 
   const chatsColl = collection(db, "Chats");
-  console.log("loop");
 
   // Get msg snapshots
   const getMsgSnap = async (userId) => {
     try {
       const msgQuery = query(
         chatsColl,
-        where("userId", "==", userId)
-        // orderBy("timestamp", "desc")
+        where("userId", "==", userId),
+        orderBy("createdAt", "desc")
       );
       const msgSnap = await getDocs(msgQuery);
       return msgSnap;
@@ -80,7 +82,7 @@ function ChatContextProvider({ children }) {
     if (chatId) {
       getChats();
     }
-  }, [chatId]);
+  }, [chatId, chatRefreshKey]);
 
   // Get messages
   useEffect(() => {
@@ -106,7 +108,7 @@ function ChatContextProvider({ children }) {
     };
 
     getMessages();
-  }, [authUser]);
+  }, [authUser, msgRefreshKey]);
 
   // Handle Chats
   const handleChat = async (prompt) => {
@@ -116,7 +118,7 @@ function ChatContextProvider({ children }) {
       const userPrompt = promptsArr.at(-1);
 
       // Set user recent prompt
-      setChats([...chats, { userPrompt, botRes: "" }]);
+      setChats([...chats, { userPrompt, botRes: "Generating..." }]);
 
       // Get response from openai
       const res = await axios.post(
@@ -156,11 +158,13 @@ function ChatContextProvider({ children }) {
             ],
             chatTitle: userPrompt,
             userId: authUser.uid,
+            createdAt: serverTimestamp(),
           });
 
-          // Set the new `chatId` and `chatTitle`
+          // Set the new `chatId` and `chatTitle` and refresh messages
           setChatId(uniqueId);
           setChatTitle(userPrompt);
+          setMsgRefreshKey(Math.random());
         } else if (chatId) {
           // Update the firebase Chat doc with `chatId`
           const chatRef = doc(db, "Chats", chatId);
@@ -192,6 +196,9 @@ function ChatContextProvider({ children }) {
         });
       }
 
+      // Update the chat and show info
+      setChatRefreshKey(Math.random());
+      setMsgRefreshKey(Math.random());
       toast.info("Chats cleared!");
     } catch (error) {
       console.log(error);

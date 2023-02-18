@@ -7,6 +7,7 @@ const Response = ({ res }) => {
   const { typing, setTyping, response } = useChat();
 
   useEffect(() => {
+    // Typing text animation
     let index = 0;
     const interval =
       typing &&
@@ -19,11 +20,14 @@ const Response = ({ res }) => {
         }
       }, 40);
 
+    // Scroll to bottom
+    window.scrollTo(0, document.body.scrollHeight);
+
     return () => clearInterval(interval);
   }, [response]);
 
   return (
-    <div className="pt-1 relative">
+    <div className="pt-1 relative text-sm md:text-base">
       {response == res && typing ? displayedText : res}
     </div>
   );

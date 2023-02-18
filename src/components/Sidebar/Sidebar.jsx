@@ -32,7 +32,7 @@ const Sidebar = ({ open, setOpen }) => {
           }`}
         >
           <nav
-            className={`max-w-xs md:w-[16rem] bg-[${colors.accent}] w-full h-screen text-white relative`}
+            className={`max-w-[14rem] md:max-w-[16rem] flex-1 pt-2 md:pt-0 bg-[${colors.accent}] w-full h-screen text-white relative`}
           >
             <div className="absolute top-0 right-0 -mr-10 pt-2 md:hidden">
               <button

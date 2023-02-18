@@ -10,7 +10,7 @@ import uuid from "react-uuid";
 
 const Chat = () => {
   const { authUser, loading } = useAuth();
-  const { chats, handleChat, setChatId } = useChat();
+  const { chats, handleChat, setChatId, chatTitle } = useChat();
 
   const router = useRouter();
   const { chat_id: chatId } = router.query;
@@ -26,11 +26,14 @@ const Chat = () => {
     }
   }, [authUser, loading]);
 
-  // Get chats by chatId
   useEffect(() => {
+    // Get chats by chatId
     if (chatId) {
       setChatId(chatId);
     }
+
+    // Scroll to bottom
+    window.scrollTo(0, document.body.scrollHeight);
   }, [chatId]);
 
   const formik = useFormik({
@@ -44,7 +47,7 @@ const Chat = () => {
 
   return (
     <>
-      <NextSeo title="Chat | IntellectAI" />
+      <NextSeo title={chatTitle || "Chat | IntellectAI"} />
 
       <div className="relative w-full h-screen">
         <Prompt formik={formik} />

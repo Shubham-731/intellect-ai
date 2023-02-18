@@ -41,7 +41,7 @@ const ChatHome = () => {
 
   return (
     <>
-      <NextSeo title="Chat | IntellectAI" />
+      <NextSeo title="New chat | IntellectAI" />
 
       <div className="relative w-full h-screen">
         <Prompt formik={formik} />
