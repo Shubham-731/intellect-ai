@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const Chat = ({ link, chat }) => {
+const Message = ({ link, msg }) => {
   return (
     <div className="hover:bg-white/10 rounded transition">
       <Link href={link}>
@@ -11,7 +11,7 @@ const Chat = ({ link, chat }) => {
           </div>
 
           <div className="capitalize text-sm flex-1 text-ellipsis max-h-5 overflow-hidden break-all relative">
-            {chat}
+            {msg}
           </div>
         </div>
       </Link>
@@ -19,4 +19,4 @@ const Chat = ({ link, chat }) => {
   );
 };
 
-export default Chat;
+export default Message;

@@ -3,12 +3,16 @@ import Prompt from "@/components/Prompt";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/authContext";
 import { useEffect, useState } from "react";
-import ChatComp from "@/components/Conversations/ChatComp";
+import ChatSection from "@/components/Conversations/_children/ChatSection";
 import { useFormik } from "formik";
+import { useChat } from "@/contexts/chatContext";
+import uuid from "react-uuid";
 
 const ChatHome = () => {
   const { authUser, loading } = useAuth();
   const router = useRouter();
+
+  const { chats, handleChat, resetChat } = useChat();
 
   // Listen for changes on loading and authUser, redirect if needed
   useEffect(() => {
@@ -23,12 +27,15 @@ const ChatHome = () => {
     }
   }, [authUser, loading]);
 
+  // Reset chat on page load
+  useEffect(() => resetChat(), []);
+
   const formik = useFormik({
     initialValues: {
       prompt: "",
     },
     onSubmit: (values, actions) => {
-      console.log(values);
+      handleChat(values.prompt);
     },
   });
 
@@ -42,31 +49,13 @@ const ChatHome = () => {
         <div className="max-h-screen scrollbar-thin scrollbar-thumb-black/50 dark:scrollbar-thumb-white/50 scrollbar-thumb-rounded-xl">
           <div className="w-full h-14 md:h-0 flex-shrink-0" />
 
-          <ChatComp
-            userMsg={`Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nemo, tenetur.`}
-            botMsg={`
-Lorem ipsum dolor sit, amet consectetur adipisicing elit. Exercitationem facilis ipsa expedita consectetur ad eos ipsam, quos iste doloremque dolore, a voluptatum velit nobis dolores! Mollitia error dolore et nesciunt!`}
-          />
-          <ChatComp
-            userMsg={`Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nemo, tenetur.`}
-            botMsg={`
-Lorem ipsum dolor sit, amet consectetur adipisicing elit. Exercitationem facilis ipsa expedita consectetur ad eos ipsam, quos iste doloremque dolore, a voluptatum velit nobis dolores! Mollitia error dolore et nesciunt!`}
-          />
-          <ChatComp
-            userMsg={`Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nemo, tenetur.`}
-            botMsg={`
-Lorem ipsum dolor sit, amet consectetur adipisicing elit. Exercitationem facilis ipsa expedita consectetur ad eos ipsam, quos iste doloremque dolore, a voluptatum velit nobis dolores! Mollitia error dolore et nesciunt!`}
-          />
-          <ChatComp
-            userMsg={`Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nemo, tenetur.`}
-            botMsg={`
-Lorem ipsum dolor sit, amet consectetur adipisicing elit. Exercitationem facilis ipsa expedita consectetur ad eos ipsam, quos iste doloremque dolore, a voluptatum velit nobis dolores! Mollitia error dolore et nesciunt!`}
-          />
-          <ChatComp
-            userMsg={`Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nemo, tenetur.`}
-            botMsg={`
-Lorem ipsum dolor sit, amet consectetur adipisicing elit. Exercitationem facilis ipsa expedita consectetur ad eos ipsam, quos iste doloremque dolore, a voluptatum velit nobis dolores! Mollitia error dolore et nesciunt!`}
-          />
+          {chats.map((chat) => (
+            <ChatSection
+              botMsg={chat.botRes}
+              userMsg={chat.userPrompt}
+              key={uuid()}
+            />
+          ))}
 
           <div className="w-full h-32 md:h-40 flex-shrink-0" />
         </div>

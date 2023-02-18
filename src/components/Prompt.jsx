@@ -1,6 +1,10 @@
-import Image from "next/image";
-
 const Prompt = ({ formik }) => {
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      formik.submitForm();
+    }
+  };
+
   return (
     <div className="absolute z-10 bottom-0 left-0 right-0 w-full border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent dark:md:bg-vert-dark-gradient">
       <form
@@ -29,6 +33,7 @@ const Prompt = ({ formik }) => {
               }}
               value={formik.values.prompt}
               onChange={formik.handleChange}
+              onKeyDown={handleKeyDown}
               name="prompt"
               id="prompt"
               className="m-0 w-full text-black/80 dark:text-white/80 resize-none border-0 bg-transparent p-0 pl-2 pr-7 focus:ring-0 focus-visible:ring-0 dark:bg-transparent md:pl-0 outline-none scrollbar-thin h-6"
@@ -54,7 +59,7 @@ const Prompt = ({ formik }) => {
               </svg>
             </button>
           </div>
-          <div className="flex ml-1 md:w-full md:m-auto md:mb-2 gap-0 md:gap-2 justify-center items-center relative">
+          {/* <div className="flex ml-1 md:w-full md:m-auto md:mb-2 gap-0 md:gap-2 justify-center items-center relative">
             <button className="p-2 bg-black/10 hover:dark:bg-black/10 hover:bg-white/10 transition-all md:hidden dark:bg-white/10 rounded h-full flex items-center justify-center">
               <div className="w-5 h-5 relative dark:invert">
                 <Image
@@ -64,7 +69,7 @@ const Prompt = ({ formik }) => {
                 />
               </div>
             </button>
-          </div>
+          </div> */}
         </div>
       </form>
       <div className="px-3 pt-2 pb-3 text-center text-xs text-black/50 dark:text-white/50 md:px-4 md:pt-3 md:pb-6">

@@ -1,13 +1,17 @@
 import colors from "@/utils/colors";
 import Image from "next/image";
 import Link from "next/link";
-import Chat from "./_children/Msg";
+import Message from "./_children/Msg";
 import { useAuth } from "@/contexts/authContext";
 import { useTheme } from "@/contexts/themeContext";
+import { useChat } from "@/contexts/chatContext";
+import uuid from "react-uuid";
 
 const Sidebar = ({ open, setOpen }) => {
   const { logout } = useAuth();
   const { theme, handleThemeChange } = useTheme();
+
+  const { messages, setChats } = useChat();
 
   return (
     <>
@@ -28,7 +32,7 @@ const Sidebar = ({ open, setOpen }) => {
           }`}
         >
           <nav
-            className={`max-w-xs md:max-w-[16rem] bg-[${colors.accent}] w-full h-screen text-white relative`}
+            className={`max-w-xs md:w-[16rem] bg-[${colors.accent}] w-full h-screen text-white relative`}
           >
             <div className="absolute top-0 right-0 -mr-10 pt-2 md:hidden">
               <button
@@ -45,7 +49,10 @@ const Sidebar = ({ open, setOpen }) => {
 
             <div className="flex flex-col justify-between relative h-full">
               {/* New chat */}
-              <div className="rounded transition h-fit">
+              <button
+                className="rounded transition h-fit"
+                onClick={() => setChats([])}
+              >
                 <Link href={"/chat"}>
                   <div className="flex items-center m-2 hover:bg-white/10 gap-2 p-3 border border-solid border-white/80 rounded">
                     <div className="relative w-4 h-4 invert">
@@ -58,31 +65,21 @@ const Sidebar = ({ open, setOpen }) => {
                     <p className="text-sm">New Chat</p>
                   </div>
                 </Link>
-              </div>
+              </button>
 
               {/* Chats */}
               <div className="p-2 h-full relative pt-0 pr-0 flex gap-1 flex-col md:overflow-y-hidden md:hover:overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/60 scrollbar-thumb-rounded-xl scroll-p-0 scroll-smooth shadow-inner">
-                <Chat
-                  link={"#"}
-                  chat={"Lorem ipsum dolor sit amet asfwfsasf asf aoasdsfsfjw"}
-                />
-                <Chat link={"#"} chat={"Lorem ipsum dolor sit amet asfasj"} />
-                <Chat link={"#"} chat={"Lorem ipsum dolor"} />
-                <Chat link={"#"} chat={"Lorem ipsum dolor"} />
-                <Chat link={"#"} chat={"Lorem ipsum dolor"} />
-                <Chat link={"#"} chat={"Lorem ipsum dolor"} />
-                <Chat link={"#"} chat={"Lorem ipsum dolor"} />
-                <Chat link={"#"} chat={"Lorem ipsum dolor"} />
-                <Chat link={"#"} chat={"Lorem ipsum dolor"} />
-                <Chat link={"#"} chat={"Lorem ipsum dolor"} />
-                <Chat link={"#"} chat={"Lorem ipsum dolor"} />
-                <Chat link={"#"} chat={"Lorem ipsum dolor"} />
-                <Chat link={"#"} chat={"Lorem ipsum dolor"} />
-                <Chat link={"#"} chat={"Lorem ipsum dolor"} />
+                {messages.map((msg) => (
+                  <Message
+                    link={`/chat/${msg.id}`}
+                    msg={msg.chatTitle}
+                    key={uuid()}
+                  />
+                ))}
 
-                <button className="mx-auto w-fit py-2 px-3 rounded border-2 border-white/50 text-sm hover:bg-white/10 transition-all">
+                {/* <button className="mx-auto w-fit py-2 px-3 rounded border-2 border-white/50 text-sm hover:bg-white/10 transition-all">
                   Show More
-                </button>
+                </button> */}
               </div>
 
               {/* Settings */}

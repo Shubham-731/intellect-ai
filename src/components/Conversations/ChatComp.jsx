@@ -1,38 +1,52 @@
-import Image from "next/image";
-import Response from "./_children/response";
-import { useAuth } from "@/contexts/authContext";
+import { useChat } from "@/contexts/chatContext";
+import { useFormik } from "formik";
+import { NextSeo } from "next-seo";
+import { useEffect } from "react";
+import uuid from "react-uuid";
+import Prompt from "../Prompt";
+import ChatSection from "./_children/ChatSection";
 
-const ChatComp = ({ userMsg, botMsg }) => {
-  const { authUser } = useAuth();
+const ChatComp = ({ chatId }) => {
+  const { chats, handleChat, setChatId } = useChat();
+  console.log(chats);
+  const formik = useFormik({
+    initialValues: {
+      prompt: "",
+    },
+    onSubmit: (values, actions) => {
+      handleChat(values.prompt);
+    },
+  });
+
+  // Get chats by chatId
+  useEffect(() => {
+    if (chatId) {
+      setChatId(chatId);
+    }
+  }, [chatId]);
 
   return (
-    <div className="">
-      {/* User */}
-      <div className="flex gap-4 p-4 sm:px-0 max-w-3xl mx-auto">
-        {/* User icon */}
-        <div className="px-2 py-1 rounded h-fit dark:bg-white/20 bg-black/20">
-          <span className="text-xs text-black/70 dark:text-white/70 uppercase">
-            {authUser?.fullName.slice(0, 2)}
-          </span>
-        </div>
+    <>
+      <NextSeo title="Chat | IntellectAI" />
 
-        {/* User prompt */}
-        <p className="dark:text-white/80 text-black/80">{userMsg}</p>
-      </div>
+      <div className="relative w-full h-screen">
+        <Prompt formik={formik} />
 
-      {/* IntellectAI */}
-      <div className="dark:bg-white/5 bg-black/5">
-        <div className="py-4 px-3 sm:px-0 w-full flex gap-4 max-w-3xl mx-auto">
-          <div className="pl-1">
-            <div className="w-7 h-7 relative invert dark:invert-0">
-              <Image src={"/svgs/bot.svg"} alt="IntellectAI" fill={true} />
-            </div>
-          </div>
+        <div className="max-h-screen scrollbar-thin scrollbar-thumb-black/50 dark:scrollbar-thumb-white/50 scrollbar-thumb-rounded-xl">
+          <div className="w-full h-14 md:h-0 flex-shrink-0" />
 
-          <Response res={botMsg} />
+          {chats.map((chat) => (
+            <ChatSection
+              botMsg={chat.botRes}
+              userMsg={chat.userPrompt}
+              key={uuid()}
+            />
+          ))}
+
+          <div className="w-full h-32 md:h-40 flex-shrink-0" />
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
