@@ -108,7 +108,7 @@ function ChatContextProvider({ children }) {
     };
 
     getMessages();
-  }, [authUser, msgRefreshKey]);
+  }, [authUser, typing]);
 
   // Handle Chats
   const handleChat = async (prompt) => {
@@ -162,9 +162,9 @@ function ChatContextProvider({ children }) {
           });
 
           // Set the new `chatId` and `chatTitle` and refresh messages
-          setChatId(uniqueId);
+          /* setChatId(uniqueId);
           setChatTitle(userPrompt);
-          setMsgRefreshKey(Math.random());
+          setMsgRefreshKey(Math.random()); */
         } else if (chatId) {
           // Update the firebase Chat doc with `chatId`
           const chatRef = doc(db, "Chats", chatId);

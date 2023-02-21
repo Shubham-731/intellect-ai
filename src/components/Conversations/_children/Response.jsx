@@ -24,7 +24,7 @@ const Response = ({ res }) => {
     window.scrollTo(0, document.body.scrollHeight);
 
     return () => clearInterval(interval);
-  }, [response]);
+  }, []);
 
   return (
     <div className="pt-1 relative text-sm md:text-base">
