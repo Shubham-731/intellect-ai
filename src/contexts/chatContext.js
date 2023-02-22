@@ -107,8 +107,11 @@ function ChatContextProvider({ children }) {
       }
     };
 
-    getMessages();
-  }, [authUser, typing]);
+    // Update the messages when typing animation stopped
+    if (!typing) {
+      getMessages();
+    }
+  }, [authUser, typing, msgRefreshKey]);
 
   // Handle Chats
   const handleChat = async (prompt) => {
@@ -162,8 +165,8 @@ function ChatContextProvider({ children }) {
           });
 
           // Set the new `chatId` and `chatTitle` and refresh messages
-          /* setChatId(uniqueId);
-          setChatTitle(userPrompt);
+          setChatId(uniqueId);
+          /* setChatTitle(userPrompt);
           setMsgRefreshKey(Math.random()); */
         } else if (chatId) {
           // Update the firebase Chat doc with `chatId`
@@ -183,6 +186,7 @@ function ChatContextProvider({ children }) {
   const resetChat = () => {
     setChatId(null);
     setChats([]);
+    setTyping(false);
     setChatTitle("New chat");
   };
 
