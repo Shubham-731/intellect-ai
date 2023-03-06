@@ -27,7 +27,7 @@ const Sidebar = ({ open, setOpen }) => {
 
         {/* Sidebar */}
         <div
-          className={`z-40 fixed md:relative transition-all md:min-w-max duration-700 flex ${
+          className={`z-40 fixed md:relative transition-all md:min-w-[16rem] duration-700 flex ${
             open ? "inset-0" : "-left-[200%] md:left-0 top-0"
           }`}
         >
@@ -68,7 +68,7 @@ const Sidebar = ({ open, setOpen }) => {
               </button>
 
               {/* Chats */}
-              <div className="p-2 h-full relative pt-0 pr-0 flex gap-1 flex-col md:overflow-y-hidden md:hover:overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/60 scrollbar-thumb-rounded-xl scroll-p-0 scroll-smooth shadow-inner">
+              <div className="p-2 h-full relative pt-0 md:pr-2 pr-0 flex gap-1 flex-col overflow-y-scroll md:overflow-y-hidden md:hover:overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/60 scrollbar-thumb-rounded-xl scroll-p-0 scroll-smooth shadow-inner">
                 {messages.length ? (
                   messages.map((msg) => (
                     <Message
@@ -78,9 +78,11 @@ const Sidebar = ({ open, setOpen }) => {
                     />
                   ))
                 ) : (
-                  <p className="text-white/80 my-2 mx-1">
-                    No conversations yet
-                  </p>
+                  <>
+                    <p className="text-white/80 my-2 mx-1">
+                      No conversations yet
+                    </p>
+                  </>
                 )}
 
                 {/* <button className="mx-auto w-fit py-2 px-3 rounded border-2 border-white/50 text-sm hover:bg-white/10 transition-all">

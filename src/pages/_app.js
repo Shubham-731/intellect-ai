@@ -12,6 +12,7 @@ import Head from "next/head";
 import Header from "@/components/Header";
 import ThemeContextProvider from "@/contexts/themeContext";
 import ChatContextProvider from "@/contexts/chatContext";
+import Providers from "@/lib/Providers";
 
 const roboto = Roboto({
   weight: ["100", "300", "400", "500", "700", "900"],
@@ -62,20 +63,14 @@ export default function App({ Component, pageProps }) {
           theme="light"
         />
 
-        <AuthContextProvider>
-          <ThemeContextProvider>
-            <ChatContextProvider>
-              <div
-                className={
-                  !Component.getLayout ? `flex flex-col md:flex-row` : ""
-                }
-              >
-                {!Component.getLayout && <Header />}
-                <Component {...pageProps} />
-              </div>
-            </ChatContextProvider>
-          </ThemeContextProvider>
-        </AuthContextProvider>
+        <Providers>
+          <div
+            className={!Component.getLayout ? `flex flex-col md:flex-row` : ""}
+          >
+            {!Component.getLayout && <Header />}
+            <Component {...pageProps} />
+          </div>
+        </Providers>
       </main>
     </>
   );
