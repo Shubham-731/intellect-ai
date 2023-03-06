@@ -43,7 +43,7 @@ const ChatHome = () => {
     <>
       <NextSeo title="New chat | IntellectAI" />
 
-      <div className="relative w-full h-screen">
+      <div className="relative w-full h-screen dark:bg-[#343540]">
         <Prompt formik={formik} />
 
         <div className="max-h-screen scrollbar-thin scrollbar-thumb-black/50 dark:scrollbar-thumb-white/50 scrollbar-thumb-rounded-xl">

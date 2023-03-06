@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 const themeContext = createContext({
   theme: "",
-  handleThemeChange: () => {},
+  toggleTheme: () => {},
 });
 
 function ThemeContextProvider({ children }) {
@@ -18,18 +18,23 @@ function ThemeContextProvider({ children }) {
 
     document.documentElement.setAttribute("data-theme", preferredColorScheme);
     document.documentElement.style.colorScheme = preferredColorScheme;
+    document.documentElement.classList.add(preferredColorScheme);
     setTheme(preferredColorScheme);
   }, []);
 
   // Handle theme change
-  const handleThemeChange = (favTheme) => {
+  const toggleTheme = (favTheme) => {
     document.documentElement.setAttribute("data-theme", favTheme);
     document.documentElement.style.colorScheme = favTheme;
+    document.documentElement.classList.remove(
+      ...document.documentElement.classList
+    );
+    document.documentElement.classList.add(favTheme);
     setTheme(favTheme);
   };
 
   return (
-    <themeContext.Provider value={{ theme, handleThemeChange }}>
+    <themeContext.Provider value={{ theme, toggleTheme }}>
       {children}
     </themeContext.Provider>
   );

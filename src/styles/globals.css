@@ -25,7 +25,7 @@ html {
   overflow-x: hidden;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
   }
@@ -38,7 +38,7 @@ html {
   .cursor {
     background-color: white;
   }
-}
+} */
 
 /* Blinking cursor animation */
 .cursor {

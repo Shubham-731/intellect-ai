@@ -9,7 +9,7 @@ import uuid from "react-uuid";
 
 const Sidebar = ({ open, setOpen }) => {
   const { logout } = useAuth();
-  const { theme, handleThemeChange } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   const { messages, setChats, clearChats } = useChat();
 
@@ -110,7 +110,7 @@ const Sidebar = ({ open, setOpen }) => {
 
                 <button
                   onClick={() =>
-                    handleThemeChange(theme === "light" ? "dark" : "light")
+                    toggleTheme(theme === "light" ? "dark" : "light")
                   }
                   className="flex items-center gap-2 p-3 rounded w-full hover:bg-white/10 transition"
                 >
