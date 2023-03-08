@@ -1,4 +1,5 @@
 import colors from "@/utils/colors";
+import Image from "next/image";
 
 const Spinner = () => {
   return (
@@ -8,4 +9,18 @@ const Spinner = () => {
     ></div>
   );
 };
+
+export const IphoneSpinner = () => {
+  return (
+    <div className="relative w-5 h-5">
+      <Image
+        src="/gifs/iphone-spinner.gif"
+        alt="Saving..."
+        fill
+        className="invert"
+      />
+    </div>
+  );
+};
+
 export default Spinner;

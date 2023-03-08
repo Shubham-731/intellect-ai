@@ -1,19 +1,27 @@
-import { NextSeo } from "next-seo";
-import { useRouter } from "next/router";
+import colors from "@/utils/colors";
+import ChatComp from "@/components/ChatComp";
+import { useChat } from "@/contexts/chatContext";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/authContext";
-import { useEffect } from "react";
-import ChatComp from "@/components/Conversations/_children/ChatSection";
-import { useFormik } from "formik";
-import ChatContextProvider, { useChat } from "@/contexts/chatContext";
 import Prompt from "@/components/Prompt";
-import uuid from "react-uuid";
+import { useRouter } from "next/router";
+import { IphoneSpinner } from "@/components/Spinner";
 
 const Chat = () => {
+  const { chats, setChatId } = useChat();
   const { authUser, loading } = useAuth();
-  const { chats, handleChat, setChatId, chatTitle } = useChat();
-
   const router = useRouter();
+  const bottomRef = useRef(null);
+
   const { chat_id: chatId } = router.query;
+
+  function scrollToBottom() {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chats, bottomRef]);
 
   // Listen for changes on loading and authUser, redirect if needed
   useEffect(() => {
@@ -31,42 +39,35 @@ const Chat = () => {
     if (chatId) {
       setChatId(chatId);
     }
-
-    // Scroll to bottom
-    window.scrollTo(0, document.body.scrollHeight);
   }, [chatId]);
 
-  const formik = useFormik({
-    initialValues: {
-      prompt: "",
-    },
-    onSubmit: (values, actions) => {
-      handleChat(values.prompt);
-    },
-  });
-
   return (
-    <>
-      <NextSeo title={chatTitle || "Chat | IntellectAI"} />
+    <div
+      className={`dark:bg-[${colors.secondary_dark}] bg-white/80 w-full h-screen relative`}
+    >
+      <Prompt />
 
-      <div className="relative w-full h-screen dark:bg-[#343540]">
-        <Prompt formik={formik} />
-
+      {chats.length > 0 ? (
         <div className="max-h-screen scrollbar-thin scrollbar-thumb-black/50 dark:scrollbar-thumb-white/50 scrollbar-thumb-rounded-xl">
           <div className="w-full h-14 md:h-0 flex-shrink-0" />
 
-          {chats.map((chat) => (
+          {chats.map((chat, index) => (
             <ChatComp
-              botMsg={chat.botRes}
-              userMsg={chat.userPrompt}
-              key={uuid()}
+              chat={chat}
+              index={index}
+              length={chats.length}
+              key={index}
             />
           ))}
 
-          <div className="w-full h-32 md:h-40 flex-shrink-0" />
+          <div className="w-full h-16 md:h-20 flex-shrink-0" ref={bottomRef} />
         </div>
-      </div>
-    </>
+      ) : (
+        <div className="w-full py-4 flex items-center justify-center">
+          <IphoneSpinner />
+        </div>
+      )}
+    </div>
   );
 };
 

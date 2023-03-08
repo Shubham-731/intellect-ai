@@ -4,14 +4,15 @@ import Link from "next/link";
 import Message from "./_children/Msg";
 import { useAuth } from "@/contexts/authContext";
 import { useTheme } from "@/contexts/themeContext";
-import { useChat } from "@/contexts/chatContext";
 import uuid from "react-uuid";
+import { useChat } from "@/contexts/chatContext";
+import { IphoneSpinner } from "../Spinner";
 
 const Sidebar = ({ open, setOpen }) => {
   const { logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
-  const { messages, setChats, clearChats } = useChat();
+  const { messages, clearChats, saving, resetChat } = useChat();
 
   return (
     <>
@@ -51,20 +52,29 @@ const Sidebar = ({ open, setOpen }) => {
               {/* New chat */}
               <button
                 className="rounded transition h-fit hidden md:block"
-                onClick={() => setChats([])}
+                onClick={() => {
+                  !saving && resetChat();
+                }}
               >
-                <Link href={"/chat"}>
+                {saving ? (
                   <div className="flex items-center m-2 hover:bg-white/10 gap-2 p-3 border border-solid border-white/80 rounded">
-                    <div className="relative w-4 h-4 invert">
-                      <Image
-                        src={"/svgs/plus.svg"}
-                        alt="New chat"
-                        fill={true}
-                      />
-                    </div>
-                    <p className="text-sm">New Chat</p>
+                    <IphoneSpinner />
+                    <p className="text-sm">Saving...</p>
                   </div>
-                </Link>
+                ) : (
+                  <Link href={"/chat"}>
+                    <div className="flex items-center m-2 hover:bg-white/10 gap-2 p-3 border border-solid border-white/80 rounded">
+                      <div className="relative w-4 h-4 invert">
+                        <Image
+                          src={"/svgs/plus.svg"}
+                          alt="New chat"
+                          fill={true}
+                        />
+                      </div>
+                      <p className="text-sm">New Chat</p>
+                    </div>
+                  </Link>
+                )}
               </button>
 
               {/* Chats */}

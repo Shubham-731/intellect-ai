@@ -1,90 +1,187 @@
-import axios from "axios";
-import { useContext, createContext, useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { db } from "@/firebase";
 import {
-  setDoc,
+  collection,
+  deleteDoc,
   doc,
-  arrayUnion,
-  updateDoc,
   getDoc,
   getDocs,
-  query,
-  collection,
-  where,
   orderBy,
-  deleteDoc,
+  query,
   serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
 } from "firebase/firestore";
-import { db } from "@/firebase";
+import { useContext, createContext, useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { useAuth } from "./authContext";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/router";
 
+// Create context
 const chatContext = createContext({
-  chatTitle: "New Chat",
-  typing: false,
-  chats: [],
   messages: [],
-  response: "",
-  setTyping: () => {},
+  chats: [],
+  doneStreaming: true,
+  chatTitle: null,
+  saving: false,
   setChatId: () => {},
-  setChats: () => {},
+  handlePrompt: async () => {},
+  setMsgRefKey: () => {},
+  clearChats: () => {},
   resetChat: () => {},
-  handleChat: async (prompt) => {},
-  clearChats: async () => {},
 });
 
+// Create context provider
 function ChatContextProvider({ children }) {
-  const [chats, setChats] = useState([]);
-  const [chatId, setChatId] = useState(null);
-  const [chatTitle, setChatTitle] = useState("New chat");
   const [messages, setMessages] = useState([]);
-  const [typing, setTyping] = useState(false);
-  const [response, setResponse] = useState("");
-  const [msgRefreshKey, setMsgRefreshKey] = useState(0);
-  const [chatRefreshKey, setChatRefreshKey] = useState(0);
+  const [msgRefKey, setMsgRefKey] = useState(0);
+  const [chats, setChats] = useState([]);
+  const [doneStreaming, setDoneStreaming] = useState(true);
+  const [chatId, setChatId] = useState(null);
+  const [chatTitle, setChatTitle] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   const { authUser } = useAuth();
   const router = useRouter();
-
-  const chatsColl = collection(db, "Chats");
 
   // Get msg snapshots
   const getMsgSnap = async (userId) => {
     try {
       const msgQuery = query(
-        chatsColl,
+        collection(db, "Chats"),
         where("userId", "==", userId),
         orderBy("createdAt", "desc")
       );
       const msgSnap = await getDocs(msgQuery);
       return msgSnap;
     } catch (error) {
-      toast.error("Internal server error!");
+      toast.error(error.message);
       console.log(error);
     }
   };
 
-  // Set chats if chatId != null
-  useEffect(() => {
-    const getChats = async () => {
-      const chatsRef = doc(db, "Chats", chatId);
-      const chatSnap = await getDoc(chatsRef);
+  // Update assistant response to chunk value
+  const updateAssRes = (chunkValue) => {
+    setChats((prevChats) => {
+      const lastChat = prevChats.at(-1);
+      return [
+        ...prevChats.slice(0, -1),
+        { ...lastChat, content: lastChat.content + chunkValue },
+      ];
+    });
+  };
 
-      if (chatSnap.exists()) {
-        setChats(chatSnap.data().chats);
-        setChatTitle(chatSnap.data().chatTitle);
-      } else {
-        router.push("/chat");
+  // Get response from OpenAI
+  const getRes = async () => {
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ chats }),
+      });
+
+      if (!response.ok) {
+        toast.error(response.statusText);
+        throw new Error(response.statusText);
       }
-    };
 
-    if (chatId) {
-      getChats();
+      // This data is a ReadableStream
+      const data = response.body;
+      if (!data) {
+        return;
+      }
+
+      const reader = data.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        const chunkValue = decoder.decode(value);
+
+        updateAssRes(chunkValue);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+      updateAssRes(error.message);
+    } finally {
+      setDoneStreaming(true);
+      setChatTitle(chats[0]["content"]);
+      setSaving(true);
     }
-  }, [chatId, chatRefreshKey]);
+  };
 
-  // Get messages
+  // Persist chats to database
+  const persistChats = async () => {
+    try {
+      if (!chatId) {
+        // Create a new chat document in firebase
+        const uniqueId = uuidv4();
+        await setDoc(doc(db, "Chats", uniqueId), {
+          chats,
+          chatTitle,
+          userId: authUser.uid,
+          createdAt: serverTimestamp(),
+        });
+
+        // Set the new `chatId`and refresh messages
+        setChatId(uniqueId);
+        setMsgRefKey(Math.random());
+      } else if (chatId) {
+        // Update the firebase Chat doc with `chatId`
+        const chatRef = doc(db, "Chats", chatId);
+        await updateDoc(chatRef, {
+          chats,
+        });
+      }
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePrompt = async (prompt) => {
+    const updatedUserChat = [
+      ...chats,
+      { role: "user", content: prompt },
+      { role: "assistant", content: "" },
+    ];
+    setChats(updatedUserChat);
+    setDoneStreaming(false);
+  };
+
+  const clearChats = async () => {
+    try {
+      if (authUser?.uid) {
+        const msgSnap = await getMsgSnap(authUser?.uid);
+        msgSnap.forEach((msg) => {
+          deleteDoc(msg.ref);
+        });
+      }
+
+      setMsgRefKey(Math.random());
+      toast.info("Chats cleared!");
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
+  // Reset chats on route change
+  const resetChat = () => {
+    setChatId(null);
+    setChats([]);
+    setChatTitle(null);
+  };
+
+  // Get msgs on page load and refresh key
   useEffect(() => {
     const getMessages = async () => {
       try {
@@ -99,6 +196,7 @@ function ChatContextProvider({ children }) {
               id: msg.id,
             });
           });
+
           setMessages(msgs);
         }
       } catch (error) {
@@ -107,129 +205,66 @@ function ChatContextProvider({ children }) {
       }
     };
 
-    // Update the messages when typing animation stopped
-    if (!typing) {
-      getMessages();
-    }
-  }, [authUser, typing, msgRefreshKey]);
+    getMessages();
+  }, [msgRefKey, authUser]);
 
-  // Handle Chats
-  const handleChat = async (prompt) => {
-    try {
-      // Get user recent prompt
-      const promptsArr = prompt.split("\n");
-      const userPrompt = promptsArr.at(-1);
+  // Set chats if chatId != null
+  useEffect(() => {
+    const getChats = async () => {
+      try {
+        const chatsRef = doc(db, "Chats", chatId);
+        const chatSnap = await getDoc(chatsRef);
 
-      // Set user recent prompt
-      setChats([...chats, { userPrompt, botRes: "Generating..." }]);
-
-      // Get response from openai
-      const res = await axios.post(
-        "/api/chat",
-        { prompt },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
+        if (chatSnap.exists()) {
+          setChats(chatSnap.data().chats);
+          setChatTitle(chatSnap.data().chatTitle);
+        } else {
+          router.push("/chat");
         }
-      );
-
-      if (res.status === 200) {
-        const botRes = res.data.response;
-
-        // Set botRes and start typing text animation
-        setResponse(botRes);
-        setTyping(true);
-
-        // Update the `chat` state
-        setChats((prevChats) => {
-          const lastChat = prevChats.at(-1);
-          const updatedRes = { ...lastChat, botRes };
-          return [...prevChats.slice(0, -1), updatedRes];
-        });
-
-        if (!chatId) {
-          // Create a new chat document in firebase
-          const uniqueId = uuidv4();
-          await setDoc(doc(db, "Chats", uniqueId), {
-            chats: [
-              {
-                userPrompt,
-                botRes,
-                media: "text",
-              },
-            ],
-            chatTitle: userPrompt,
-            userId: authUser.uid,
-            createdAt: serverTimestamp(),
-          });
-
-          // Set the new `chatId` and `chatTitle` and refresh messages
-          setChatId(uniqueId);
-          /* setChatTitle(userPrompt);
-          setMsgRefreshKey(Math.random()); */
-        } else if (chatId) {
-          // Update the firebase Chat doc with `chatId`
-          const chatRef = doc(db, "Chats", chatId);
-          await updateDoc(chatRef, {
-            chats: arrayUnion({ userPrompt, botRes, media: "text" }),
-          });
-        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error.message);
+      } finally {
       }
-    } catch (error) {
-      console.log(error);
-      toast.error(error.message);
+    };
+
+    if (chatId) {
+      getChats();
     }
-  };
+  }, [chatId]);
 
-  // Reset chats on route change
-  const resetChat = () => {
-    setChatId(null);
-    setChats([]);
-    setTyping(false);
-    setChatTitle("New chat");
-  };
-
-  // Clear chats
-  const clearChats = async () => {
-    try {
-      if (authUser?.uid) {
-        const msgSnap = await getMsgSnap(authUser?.uid);
-        msgSnap.forEach((msg) => {
-          deleteDoc(msg.ref);
-        });
-      }
-
-      // Update the chat and show info
-      setChatRefreshKey(Math.random());
-      setMsgRefreshKey(Math.random());
-      toast.info("Chats cleared!");
-    } catch (error) {
-      console.log(error);
-      toast.error(error.message);
+  useEffect(() => {
+    if (!doneStreaming) {
+      getRes();
     }
-  };
+  }, [doneStreaming]);
 
-  const contextValues = {
-    chats,
-    typing,
-    setTyping,
-    setChats,
-    response,
-    handleChat,
-    setChatId,
-    chatTitle,
-    messages,
-    resetChat,
-    clearChats,
-  };
+  useEffect(() => {
+    if (doneStreaming && saving) {
+      persistChats();
+    }
+  }, [saving]);
 
   return (
-    <chatContext.Provider value={contextValues}>
+    <chatContext.Provider
+      value={{
+        messages,
+        setMsgRefKey,
+        chats,
+        handlePrompt,
+        doneStreaming,
+        saving,
+        setChatId,
+        chatTitle,
+        clearChats,
+        resetChat,
+      }}
+    >
       {children}
     </chatContext.Provider>
   );
 }
 
+// Export context provider and useContext
 export default ChatContextProvider;
 export const useChat = () => useContext(chatContext);

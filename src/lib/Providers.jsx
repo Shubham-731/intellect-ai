@@ -11,4 +11,5 @@ const Providers = ({ children }) => {
     </AuthContextProvider>
   );
 };
+
 export default Providers;

@@ -4,14 +4,11 @@ import LoadingBar from "react-top-loading-bar";
 import { useRef, useEffect } from "react";
 import colors from "@/utils/colors";
 import { useRouter } from "next/router";
-import AuthContextProvider from "@/contexts/authContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import seo from "@/utils/seo";
 import Head from "next/head";
 import Header from "@/components/Header";
-import ThemeContextProvider from "@/contexts/themeContext";
-import ChatContextProvider from "@/contexts/chatContext";
 import Providers from "@/lib/Providers";
 
 const roboto = Roboto({
@@ -51,16 +48,13 @@ export default function App({ Component, pageProps }) {
       </Head>
       <main className={roboto.className}>
         <ToastContainer
-          position="top-right"
-          autoClose={5000}
+          position="top-center"
+          autoClose={2500}
           hideProgressBar={false}
           newestOnTop={false}
           closeOnClick
           rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
+          theme={"dark"}
         />
 
         <Providers>
