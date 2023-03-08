@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/authContext";
 import Prompt from "@/components/Prompt";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 const ChatHome = () => {
   const { chats } = useChat();
@@ -32,28 +33,33 @@ const ChatHome = () => {
   }, [authUser, loading]);
 
   return (
-    <div
-      className={`dark:bg-[${colors.secondary_dark}] bg-white/80 w-full h-screen relative`}
-    >
-      <Prompt />
+    <>
+      <Head>
+        <title>New chat | IntellectAI</title>
+      </Head>
+      <div
+        className={`dark:bg-[${colors.secondary_dark}] bg-white/80 w-full h-screen relative`}
+      >
+        <Prompt />
 
-      {/* Chats container */}
-      <div className="max-h-screen scrollbar-thin scrollbar-thumb-black/50 dark:scrollbar-thumb-white/50 scrollbar-thumb-rounded-xl">
-        <div className="w-full h-14 md:h-0 flex-shrink-0" />
+        {/* Chats container */}
+        <div className="max-h-screen scrollbar-thin scrollbar-thumb-black/50 dark:scrollbar-thumb-white/50 scrollbar-thumb-rounded-xl">
+          <div className="w-full h-14 md:h-0 flex-shrink-0" />
 
-        {/* Chats */}
-        {chats.map((chat, index) => (
-          <ChatComp
-            chat={chat}
-            index={index}
-            length={chats.length}
-            key={index}
-          />
-        ))}
+          {/* Chats */}
+          {chats.map((chat, index) => (
+            <ChatComp
+              chat={chat}
+              index={index}
+              length={chats.length}
+              key={index}
+            />
+          ))}
 
-        <div className="w-full h-16 md:h-20 flex-shrink-0" ref={bottomRef} />
+          <div className="w-full h-16 md:h-20 flex-shrink-0" ref={bottomRef} />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -1,4 +1,3 @@
-import colors from "@/utils/colors";
 import ChatComp from "@/components/ChatComp";
 import { useChat } from "@/contexts/chatContext";
 import { useEffect, useRef } from "react";
@@ -6,9 +5,10 @@ import { useAuth } from "@/contexts/authContext";
 import Prompt from "@/components/Prompt";
 import { useRouter } from "next/router";
 import { IphoneSpinner } from "@/components/Spinner";
+import Head from "next/head";
 
 const Chat = () => {
-  const { chats, setChatId } = useChat();
+  const { chats, setChatId, chatTitle } = useChat();
   const { authUser, loading } = useAuth();
   const router = useRouter();
   const bottomRef = useRef(null);
@@ -42,32 +42,39 @@ const Chat = () => {
   }, [chatId]);
 
   return (
-    <div
-      className={`dark:bg-[${colors.secondary_dark}] bg-white/80 w-full h-screen relative`}
-    >
-      <Prompt />
+    <>
+      <Head>
+        <title>{chatTitle}</title>
+      </Head>
 
-      {chats.length > 0 ? (
-        <div className="max-h-screen scrollbar-thin scrollbar-thumb-black/50 dark:scrollbar-thumb-white/50 scrollbar-thumb-rounded-xl">
-          <div className="w-full h-14 md:h-0 flex-shrink-0" />
+      <div className={`dark:bg-[#343540] bg-white/80 w-full h-screen relative`}>
+        <Prompt />
 
-          {chats.map((chat, index) => (
-            <ChatComp
-              chat={chat}
-              index={index}
-              length={chats.length}
-              key={index}
+        {chats.length > 0 ? (
+          <div className="max-h-screen scrollbar-thin scrollbar-thumb-black/50 dark:scrollbar-thumb-white/50 scrollbar-thumb-rounded-xl">
+            <div className="w-full h-14 md:h-0 flex-shrink-0" />
+
+            {chats.map((chat, index) => (
+              <ChatComp
+                chat={chat}
+                index={index}
+                length={chats.length}
+                key={index}
+              />
+            ))}
+
+            <div
+              className="w-full h-16 md:h-20 flex-shrink-0"
+              ref={bottomRef}
             />
-          ))}
-
-          <div className="w-full h-16 md:h-20 flex-shrink-0" ref={bottomRef} />
-        </div>
-      ) : (
-        <div className="w-full py-4 flex items-center justify-center">
-          <IphoneSpinner />
-        </div>
-      )}
-    </div>
+          </div>
+        ) : (
+          <div className="w-full py-4 flex items-center justify-center">
+            <IphoneSpinner />
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 
