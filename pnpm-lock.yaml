@@ -9,6 +9,8 @@ specifiers:
   eventsource-parser: ^0.1.0
   firebase: ^9.17.1
   formik: ^2.2.9
+  highlight.js: ^11.7.0
+  marked: ^4.2.12
   next: 13.1.6
   next-seo: ^5.15.0
   openai: ^3.1.0
@@ -31,6 +33,8 @@ dependencies:
   eventsource-parser: 0.1.0
   firebase: 9.17.1
   formik: 2.2.9_react@18.2.0
+  highlight.js: 11.7.0
+  marked: 4.2.12
   next: 13.1.6_biqbaboplfbrettd7655fr4n2y
   next-seo: 5.15.0_3vryta7zmbcsw4rrqf4axjqggm
   openai: 3.1.0
@@ -2017,6 +2021,11 @@ packages:
     dependencies:
       function-bind: 1.1.1
 
+  /highlight.js/11.7.0:
+    resolution: {integrity: sha512-1rRqesRFhMO/PRF+G86evnyJkCgaZFOI+Z6kdj15TA18funfoqJXvgPCLSf0SWq3SRfg1j3HlDs8o4s3EGq1oQ==}
+    engines: {node: '>=12.0.0'}
+    dev: false
+
   /hoist-non-react-statics/3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
     dependencies:
@@ -2348,6 +2357,12 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       yallist: 4.0.0
+    dev: false
+
+  /marked/4.2.12:
+    resolution: {integrity: sha512-yr8hSKa3Fv4D3jdZmtMMPghgVt6TWbk86WQaWhDloQjRSQhMMYCAro7jP7VDJrjjdV8pxVxMssXS8B8Y5DZ5aw==}
+    engines: {node: '>= 12'}
+    hasBin: true
     dev: false
 
   /merge2/1.4.1:

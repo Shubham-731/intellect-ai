@@ -42,11 +42,9 @@ const ChatHome = () => {
       >
         <Prompt />
 
-        {/* Chats container */}
-        <div className="max-h-screen scrollbar-thin scrollbar-thumb-black/50 dark:scrollbar-thumb-white/50 scrollbar-thumb-rounded-xl">
+        <div className="max-h-screen overflow-x-clip scrollbar-thin scrollbar-thumb-black/50 dark:scrollbar-thumb-white/50 scrollbar-thumb-rounded-xl w-full relative">
           <div className="w-full h-14 md:h-0 flex-shrink-0" />
 
-          {/* Chats */}
           {chats.map((chat, index) => (
             <ChatComp
               chat={chat}

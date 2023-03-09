@@ -1,15 +1,18 @@
 import "@/styles/globals.css";
+import "@/styles/marked.css";
 import { Roboto } from "@next/font/google";
 import LoadingBar from "react-top-loading-bar";
 import { useRef, useEffect } from "react";
 import colors from "@/utils/colors";
 import { useRouter } from "next/router";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import seo from "@/utils/seo";
 import Head from "next/head";
 import Header from "@/components/Header";
 import Providers from "@/lib/Providers";
+
+import "react-toastify/dist/ReactToastify.css";
+import "highlight.js/styles/shades-of-purple.css";
 
 const roboto = Roboto({
   weight: ["100", "300", "400", "500", "700", "900"],

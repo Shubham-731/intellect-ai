@@ -1,3 +1,6 @@
+import { marked } from "marked";
+import hljs from "highlight.js";
+
 // Format user data
 const formatAuthUser = (user) => ({
   uid: user.uid,
@@ -20,4 +23,27 @@ const formatFbAuthCode = (code) => {
   }
 };
 
-export { formatAuthUser, formatFbAuthCode };
+// Format OpenAI response
+const formatContent = (text, theme) => {
+  const renderer = new marked.Renderer();
+
+  renderer.code = function (code, language) {
+    const highlightedCode = hljs.highlightAuto(code, [language]).value;
+    const languageClass = language ? `language-${language}` : "";
+    return `
+    <pre style="${
+      theme === "dark" ? "background-color: black;" : "background-color: white;"
+    } border-radius: 1rem;" class="px-4">
+      <code class="${languageClass}">
+        ${highlightedCode}
+      </code>
+    </pre>
+  `;
+  };
+
+  const html = marked(text);
+
+  return html;
+};
+
+export { formatAuthUser, formatFbAuthCode, formatContent };
