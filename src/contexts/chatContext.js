@@ -1,4 +1,4 @@
-import { db } from "@/firebase";
+import { db } from "@/firebase"
 import {
   collection,
   deleteDoc,
@@ -11,12 +11,76 @@ import {
   setDoc,
   updateDoc,
   where,
-} from "firebase/firestore";
-import { useContext, createContext, useState, useEffect } from "react";
-import { toast } from "react-toastify";
-import { useAuth } from "./authContext";
-import { v4 as uuidv4 } from "uuid";
-import { useRouter } from "next/router";
+} from "firebase/firestore"
+import {
+  useContext,
+  createContext,
+  useState,
+  useEffect,
+  useReducer,
+} from "react"
+import { toast } from "react-toastify"
+import { useAuth } from "./authContext"
+import { v4 as uuidv4 } from "uuid"
+import { useRouter } from "next/router"
+
+function reducer(state, action) {
+  switch (action.name) {
+    case "set_messages":
+      return {
+        ...state,
+        messages: action.value,
+      }
+
+    case "handle_chat_prompt":
+      return {
+        ...state,
+        chats: action.updatedChats,
+        doneStreaming: action.doneStreaming,
+      }
+
+    case "reset_chats":
+      return {
+        ...state,
+        chats: [],
+        chatTitle: null,
+      }
+
+    case "set_initial_chat_content":
+      return {
+        ...state,
+        chats: action.initialChats,
+        chatTitle: action.chatTitle,
+      }
+
+    case "set_chat_response":
+      const lastChat = state["chats"].at(-1)
+      return {
+        ...state,
+        chats: [
+          ...state["chats"].slice(0, -1),
+          { ...lastChat, content: lastChat.content + action.chunkValue },
+        ],
+      }
+
+    case "set_final_response":
+      return {
+        ...state,
+        doneStreaming: true,
+        chatTitle: state["chats"][0]["content"],
+        saving: true,
+      }
+
+    case "chats_saved":
+      return {
+        ...state,
+        saving: false,
+      }
+
+    default:
+      throw new Error("Unknown action:", action.name)
+  }
+}
 
 // Create context
 const chatContext = createContext({
@@ -30,20 +94,23 @@ const chatContext = createContext({
   setMsgRefKey: () => {},
   clearChats: () => {},
   resetChat: () => {},
-});
+})
 
 // Create context provider
 function ChatContextProvider({ children }) {
-  const [messages, setMessages] = useState([]);
-  const [msgRefKey, setMsgRefKey] = useState(0);
-  const [chats, setChats] = useState([]);
-  const [doneStreaming, setDoneStreaming] = useState(true);
-  const [chatId, setChatId] = useState(null);
-  const [chatTitle, setChatTitle] = useState(null);
-  const [saving, setSaving] = useState(false);
+  const [msgRefKey, setMsgRefKey] = useState(0)
+  const [chatId, setChatId] = useState(null)
 
-  const { authUser } = useAuth();
-  const router = useRouter();
+  const [state, dispatch] = useReducer(reducer, {
+    messages: [],
+    chats: [],
+    doneStreaming: true,
+    chatTitle: null,
+    saving: false,
+  })
+
+  const { authUser } = useAuth()
+  const router = useRouter()
 
   // Get msg snapshots
   const getMsgSnap = async (userId) => {
@@ -52,25 +119,19 @@ function ChatContextProvider({ children }) {
         collection(db, "Chats"),
         where("userId", "==", userId),
         orderBy("createdAt", "desc")
-      );
-      const msgSnap = await getDocs(msgQuery);
-      return msgSnap;
+      )
+      const msgSnap = await getDocs(msgQuery)
+      return msgSnap
     } catch (error) {
-      toast.error(error.message);
-      console.log(error);
+      toast.error(error.message)
+      console.log(error)
     }
-  };
+  }
 
   // Update assistant response to chunk value
   const updateAssRes = (chunkValue) => {
-    setChats((prevChats) => {
-      const lastChat = prevChats.at(-1);
-      return [
-        ...prevChats.slice(0, -1),
-        { ...lastChat, content: lastChat.content + chunkValue },
-      ];
-    });
-  };
+    dispatch({ name: "set_chat_response", chunkValue })
+  }
 
   // Get response from OpenAI
   const getRes = async () => {
@@ -80,191 +141,195 @@ function ChatContextProvider({ children }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ chats }),
-      });
+        body: JSON.stringify({ chats: state["chats"] }),
+      })
 
       if (!response.ok) {
-        toast.error(response.statusText);
-        throw new Error(response.statusText);
+        toast.error(response.statusText)
+        throw new Error(response.statusText)
       }
 
       // This data is a ReadableStream
-      const data = response.body;
+      const data = response.body
       if (!data) {
-        return;
+        return
       }
 
-      const reader = data.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
+      const reader = data.getReader()
+      const decoder = new TextDecoder()
+      let done = false
 
       while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
-        const chunkValue = decoder.decode(value);
+        const { value, done: doneReading } = await reader.read()
+        done = doneReading
+        const chunkValue = decoder.decode(value)
 
-        updateAssRes(chunkValue);
+        updateAssRes(chunkValue)
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error.message);
-      updateAssRes(error.message);
+      console.log(error)
+      toast.error(error.message)
+      updateAssRes(error.message)
     } finally {
-      setDoneStreaming(true);
-      setChatTitle(chats[0]["content"]);
-      setSaving(true);
+      // Final response
+      dispatch({ name: "set_final_response" })
     }
-  };
+  }
 
   // Persist chats to database
   const persistChats = async () => {
     try {
       if (!chatId) {
         // Create a new chat document in firebase
-        const uniqueId = uuidv4();
+        const uniqueId = uuidv4()
         await setDoc(doc(db, "Chats", uniqueId), {
-          chats,
-          chatTitle,
+          chats: state["chats"],
+          chatTitle: state["chatTitle"],
           userId: authUser.uid,
           createdAt: serverTimestamp(),
-        });
+        })
 
         // Set the new `chatId`and refresh messages
-        setChatId(uniqueId);
-        setMsgRefKey(Math.random());
+        setChatId(uniqueId)
+        setMsgRefKey(Math.random())
       } else if (chatId) {
         // Update the firebase Chat doc with `chatId`
-        const chatRef = doc(db, "Chats", chatId);
+        const chatRef = doc(db, "Chats", chatId)
         await updateDoc(chatRef, {
-          chats,
-        });
+          chats: state["chats"],
+        })
       }
     } catch (error) {
-      toast.error(error.message);
-      console.log(error);
+      toast.error(error.message)
+      console.log(error)
     } finally {
-      setSaving(false);
+      dispatch({ name: "chats_saved" })
     }
-  };
+  }
 
   const handlePrompt = async (prompt) => {
     const updatedUserChat = [
-      ...chats,
+      ...state["chats"],
       { role: "user", content: prompt },
       { role: "assistant", content: "" },
-    ];
-    setChats(updatedUserChat);
-    setDoneStreaming(false);
-  };
+    ]
+
+    // Handle chat prompt
+    dispatch({
+      name: "handle_chat_prompt",
+      updatedChats: updatedUserChat,
+      doneStreaming: false,
+    })
+  }
 
   const clearChats = async () => {
     try {
       if (authUser?.uid) {
-        const msgSnap = await getMsgSnap(authUser?.uid);
+        const msgSnap = await getMsgSnap(authUser?.uid)
         msgSnap.forEach((msg) => {
-          deleteDoc(msg.ref);
-        });
+          deleteDoc(msg.ref)
+        })
       }
 
-      setMsgRefKey(Math.random());
-      toast.info("Chats cleared!");
+      setMsgRefKey(Math.random())
+      toast.info("Chats cleared!")
     } catch (error) {
-      console.log(error);
-      toast.error(error.message);
+      console.log(error)
+      toast.error(error.message)
     }
-  };
+  }
 
   // Reset chats on route change
   const resetChat = () => {
-    setChatId(null);
-    setChats([]);
-    setChatTitle(null);
-  };
+    setChatId(null)
+
+    dispatch({ name: "reset_chats" })
+  }
 
   // Get msgs on page load and refresh key
   useEffect(() => {
     const getMessages = async () => {
       try {
         if (authUser?.uid) {
-          const msgSnap = await getMsgSnap(authUser?.uid);
+          const msgSnap = await getMsgSnap(authUser?.uid)
 
           // Set messages
-          let msgs = [];
+          let msgs = []
           msgSnap.docs.map((msg) => {
             msgs.push({
               chatTitle: msg.data().chatTitle,
               id: msg.id,
-            });
-          });
+            })
+          })
 
-          setMessages(msgs);
+          dispatch({ name: "set_messages", value: msgs })
         }
       } catch (error) {
-        toast.error("Internal server error!");
-        console.log(error);
+        toast.error("Internal server error!")
+        console.log(error)
       }
-    };
+    }
 
-    getMessages();
-  }, [msgRefKey, authUser]);
+    getMessages()
+  }, [msgRefKey, authUser])
 
   // Set chats if chatId != null
   useEffect(() => {
     const getChats = async () => {
       try {
-        const chatsRef = doc(db, "Chats", chatId);
-        const chatSnap = await getDoc(chatsRef);
+        const chatsRef = doc(db, "Chats", chatId)
+        const chatSnap = await getDoc(chatsRef)
 
         if (chatSnap.exists()) {
-          setChats(chatSnap.data().chats);
-          setChatTitle(chatSnap.data().chatTitle);
+          // Set initial chat content
+          dispatch({
+            name: "set_initial_chat_content",
+            initialChats: chatSnap.data().chats,
+            chatTitle: chatSnap.data().chatTitle,
+          })
         } else {
-          router.push("/chat");
+          router.push("/chat")
         }
       } catch (error) {
-        console.log(error);
-        toast.error(error.message);
+        console.log(error)
+        toast.error(error.message)
       } finally {
       }
-    };
+    }
 
     if (chatId) {
-      getChats();
+      getChats()
     }
-  }, [chatId]);
+  }, [chatId])
 
   useEffect(() => {
-    if (!doneStreaming) {
-      getRes();
+    if (!state["doneStreaming"]) {
+      getRes()
     }
-  }, [doneStreaming]);
+  }, [state["doneStreaming"]])
 
   useEffect(() => {
-    if (doneStreaming && saving) {
-      persistChats();
+    if (state["doneStreaming"] && state["saving"]) {
+      persistChats()
     }
-  }, [saving]);
+  }, [state["saving"]])
 
   return (
     <chatContext.Provider
       value={{
-        messages,
+        ...state,
         setMsgRefKey,
-        chats,
         handlePrompt,
-        doneStreaming,
-        saving,
         setChatId,
-        chatTitle,
         clearChats,
         resetChat,
       }}
     >
       {children}
     </chatContext.Provider>
-  );
+  )
 }
 
 // Export context provider and useContext
-export default ChatContextProvider;
-export const useChat = () => useContext(chatContext);
+export default ChatContextProvider
+export const useChat = () => useContext(chatContext)
