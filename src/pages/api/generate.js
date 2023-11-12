@@ -1,24 +1,24 @@
-import { OpenAIStream } from "@/utils/OpenAIStream";
+import { OpenAIStream } from "@/utils/OpenAIStream"
 
 if (!process.env.OPENAI_API_KEY) {
-  throw new Error("Missing env var from OpenAI");
+  throw new Error("Missing env var from OpenAI")
 }
 
 export const config = {
   runtime: "edge",
-};
+}
 
 async function handler(req, res) {
   try {
     if (req.method === "POST") {
-      const { chats } = await req.json();
+      const { chats } = await req.json()
 
       if (!chats) {
-        return new Response("No chats in the request", { status: 400 });
+        return new Response("No chats in the request", { status: 400 })
       }
 
       const payload = {
-        model: "gpt-3.5-turbo",
+        model: "gpt-4-1106-preview",
         messages: [
           {
             role: "system",
@@ -35,17 +35,17 @@ async function handler(req, res) {
         max_tokens: 2048,
         stream: true,
         n: 1,
-      };
+      }
 
-      const stream = await OpenAIStream(payload);
-      return new Response(stream);
+      const stream = await OpenAIStream(payload)
+      return new Response(stream)
     } else {
-      return new Response("Method not allowed!", { status: 405 });
+      return new Response("Method not allowed!", { status: 405 })
     }
   } catch (error) {
-    console.log(error);
-    return new Response("Internal server error!", { status: 500 });
+    console.log(error)
+    return new Response("Internal server error!", { status: 500 })
   }
 }
 
-export default handler;
+export default handler
